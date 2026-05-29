@@ -459,13 +459,14 @@
   document.addEventListener('mousemove', e => {
     mx = e.clientX; my = e.clientY;
     glow.style.left = mx + 'px'; glow.style.top = my + 'px';
-    if (Math.random() > 0.6) {
+    if (Math.random() > 0.35) {
       bubbles.push({
-        x: mx + (Math.random()-0.5)*16, y: my,
-        r: Math.random()*6 + 2,
+        x: mx + (Math.random()-0.5)*20, y: my,
+        r: Math.random()*9 + 3,
         vx: (Math.random()-0.5)*0.8, vy: -(Math.random()*1.5+0.5),
-        alpha: 0.6 + Math.random()*0.3,
-        hue: Math.random() > 0.5 ? 280 : 195
+        alpha: 0.55 + Math.random()*0.3,
+        hue: Math.random() > 0.5 ? 280 : 195,
+        blur: Math.random() < 0.45 ? Math.random()*3.5 + 1 : 0
       });
     }
   });
@@ -473,14 +474,22 @@
     ctx.clearRect(0,0,canvas.width,canvas.height);
     for (let i=bubbles.length-1; i>=0; i--){
       const b = bubbles[i];
-      b.x += b.vx; b.y += b.vy; b.alpha -= 0.008; b.r *= 0.997;
+      b.x += b.vx; b.y += b.vy; b.alpha -= 0.005; b.r *= 0.998;
       if (b.alpha <= 0){ bubbles.splice(i,1); continue; }
+      // depth-of-field: some bubbles are out of focus
+      ctx.filter = b.blur ? `blur(${b.blur}px)` : 'none';
+      // translucent water-glass body
       ctx.beginPath(); ctx.arc(b.x,b.y,b.r,0,Math.PI*2);
-      ctx.fillStyle = `hsla(${b.hue},70%,70%,${b.alpha*0.4})`; ctx.fill();
-      ctx.beginPath(); ctx.arc(b.x,b.y,b.r+1.5,0,Math.PI*2);
-      ctx.strokeStyle = `hsla(${b.hue},80%,80%,${b.alpha*0.2})`; ctx.lineWidth = 1; ctx.stroke();
+      ctx.fillStyle = `hsla(${b.hue},70%,78%,${b.alpha*0.18})`; ctx.fill();
+      // crisp bubble rim
+      ctx.beginPath(); ctx.arc(b.x,b.y,b.r,0,Math.PI*2);
+      ctx.strokeStyle = `hsla(${b.hue},90%,88%,${b.alpha*0.7})`; ctx.lineWidth = 1.4; ctx.stroke();
+      // upper-left shimmer
+      ctx.beginPath(); ctx.arc(b.x - b.r*0.35, b.y - b.r*0.35, b.r*0.22, 0, Math.PI*2);
+      ctx.fillStyle = `hsla(${b.hue},95%,96%,${b.alpha*0.85})`; ctx.fill();
     }
-    if (bubbles.length > 80) bubbles.splice(0, bubbles.length - 80);
+    ctx.filter = 'none';
+    if (bubbles.length > 140) bubbles.splice(0, bubbles.length - 140);
     requestAnimationFrame(anim);
   })();
 })();

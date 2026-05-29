@@ -32,7 +32,6 @@ body {
   color: var(--text-primary);
   background: var(--bg);
   overflow-x: hidden;
-  cursor: none;
 }
 
 /* ─── GRAIN ─── */
@@ -379,8 +378,7 @@ canvas.bubble-canvas {
 <body>
 
 <div class="grain"></div>
-<canvas class="bubble-canvas" id="bubbleCanvas"></canvas>
-<div class="cursor-glow" id="cursorGlow"></div>
+<!-- bubble canvas + custom cursor glow removed from Big Art landing — Octopolis pages only -->
 
 <!-- NAV -->
 <nav class="nav">
@@ -512,54 +510,14 @@ const observer = new IntersectionObserver((entries) => {
 }, { threshold: 0.15 });
 document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
 
-// Bubble cursor
+// Custom cursor glow (always on for desktop) + bubble canvas (only when present)
 const canvas = document.getElementById('bubbleCanvas');
 const glow = document.getElementById('cursorGlow');
-if (canvas && glow && window.innerWidth > 768) {
-  const ctx = canvas.getContext('2d');
-  let mx = window.innerWidth/2, my = window.innerHeight/2;
-  const bubbles = [];
-  function resizeCanvas() {
-    canvas.width = window.innerWidth;
-    canvas.height = window.innerHeight;
-  }
-  resizeCanvas();
-  window.addEventListener('resize', resizeCanvas);
+if (glow && window.innerWidth > 768) {
   document.addEventListener('mousemove', (e) => {
-    mx = e.clientX; my = e.clientY;
-    glow.style.left = mx+'px'; glow.style.top = my+'px';
-    if (Math.random() > 0.6) {
-      bubbles.push({
-        x: mx + (Math.random()-0.5)*16,
-        y: my,
-        r: Math.random()*6+2,
-        vx: (Math.random()-0.5)*0.8,
-        vy: -(Math.random()*1.5+0.5),
-        alpha: 0.6+Math.random()*0.3,
-        hue: Math.random()>0.5 ? 280 : 195,
-      });
-    }
+    glow.style.left = e.clientX + 'px';
+    glow.style.top  = e.clientY + 'px';
   });
-  (function anim() {
-    ctx.clearRect(0,0,canvas.width,canvas.height);
-    for (let i=bubbles.length-1; i>=0; i--) {
-      const b=bubbles[i];
-      b.x+=b.vx; b.y+=b.vy; b.alpha-=0.008; b.r*=0.997;
-      if (b.alpha<=0) { bubbles.splice(i,1); continue; }
-      ctx.beginPath();
-      ctx.arc(b.x,b.y,b.r,0,Math.PI*2);
-      ctx.fillStyle=`hsla(${b.hue},70%,70%,${b.alpha*0.4})`;
-      ctx.fill();
-      ctx.beginPath();
-      ctx.arc(b.x,b.y,b.r+1.5,0,Math.PI*2);
-      ctx.strokeStyle=`hsla(${b.hue},80%,80%,${b.alpha*0.2})`;
-      ctx.lineWidth=1;
-      ctx.stroke();
-    }
-    if (bubbles.length>80) bubbles.splice(0,bubbles.length-80);
-    requestAnimationFrame(anim);
-  })();
-  // Expand glow on interactive hover
   document.querySelectorAll('a, button').forEach(el => {
     el.addEventListener('mouseenter', () => {
       glow.style.width='40px'; glow.style.height='40px';
@@ -568,6 +526,50 @@ if (canvas && glow && window.innerWidth > 768) {
       glow.style.width='20px'; glow.style.height='20px';
     });
   });
+
+  // Bubble canvas — only present on Octopolis pages. Skipped on Big Art landing.
+  if (canvas) {
+    const ctx = canvas.getContext('2d');
+    const bubbles = [];
+    function resizeCanvas() {
+      canvas.width = window.innerWidth;
+      canvas.height = window.innerHeight;
+    }
+    resizeCanvas();
+    window.addEventListener('resize', resizeCanvas);
+    document.addEventListener('mousemove', (e) => {
+      if (Math.random() > 0.35) {
+        bubbles.push({
+          x: e.clientX + (Math.random()-0.5)*20,
+          y: e.clientY,
+          r: Math.random()*9+3,
+          vx: (Math.random()-0.5)*0.8,
+          vy: -(Math.random()*1.5+0.5),
+          alpha: 0.8+Math.random()*0.2,
+          hue: Math.random()>0.5 ? 280 : 195,
+        });
+      }
+    });
+    (function anim() {
+      ctx.clearRect(0,0,canvas.width,canvas.height);
+      for (let i=bubbles.length-1; i>=0; i--) {
+        const b=bubbles[i];
+        b.x+=b.vx; b.y+=b.vy; b.alpha-=0.005; b.r*=0.998;
+        if (b.alpha<=0) { bubbles.splice(i,1); continue; }
+        ctx.beginPath();
+        ctx.arc(b.x,b.y,b.r,0,Math.PI*2);
+        ctx.fillStyle=`hsla(${b.hue},75%,72%,${b.alpha*0.75})`;
+        ctx.fill();
+        ctx.beginPath();
+        ctx.arc(b.x,b.y,b.r+1.8,0,Math.PI*2);
+        ctx.strokeStyle=`hsla(${b.hue},85%,82%,${b.alpha*0.55})`;
+        ctx.lineWidth=1.5;
+        ctx.stroke();
+      }
+      if (bubbles.length>140) bubbles.splice(0,bubbles.length-140);
+      requestAnimationFrame(anim);
+    })();
+  }
 }
 
 // Smooth nav scroll

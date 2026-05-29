@@ -1238,7 +1238,7 @@ section {
         <div class="pt-body">
           <ul class="pt-perks">
             <li>Everything in <strong>Coral</strong></li>
-            <li>A ticket to the <strong>Patron Honor Soir&eacute;e</strong> on the playa</li>
+            <li>A <strong>Patron Gift</strong> waiting for you on the playa &mdash; you'll know what to do with it when the time comes</li>
           </ul>
           <a href="#get-involved" data-gi-open="donate" class="pt-btn">Become a patron &rarr;</a>
         </div>
@@ -1252,7 +1252,7 @@ section {
         </div>
         <div class="pt-body">
           <ul class="pt-perks">
-            <li>Everything in <strong>Ink</strong>, with a second ticket to both the Auction and the Soir&eacute;e</li>
+            <li>Everything in <strong>Ink</strong>, with a second Patron Gift &mdash; one to keep, one to share</li>
             <li>A shout-out across our media channels &mdash; your name travels with Octopolis</li>
           </ul>
           <a href="#get-involved" data-gi-open="donate" class="pt-btn">Become a patron &rarr;</a>
@@ -1301,8 +1301,8 @@ section {
         <p>Bid to win a piece of original art &mdash; or a piece of Octopolis herself. Auctions run throughout 2026.</p>
       </div>
       <div class="pt-note">
-        <h4>The Patron Honor Soir&eacute;e</h4>
-        <p>An evening with the Octopolis crew on the playa &mdash; food, drink, and art together. Burning Man, Monday, 6&ndash;9pm.</p>
+        <h4>The Patron Gift</h4>
+        <p>Something small and mysterious waiting for each patron on the playa. You'll receive yours when the time comes &mdash; and you'll know what to do with it.</p>
       </div>
     </div>
   </div>
@@ -1486,10 +1486,10 @@ section {
         <a href="#" class="event-link">Learn more &rarr;</a>
       </div>
       <div class="event-card reveal">
-        <div class="event-date">Burning Man &middot; Monday 6&ndash;9pm</div>
-        <div class="event-name">Patron Honor Soir&eacute;e</div>
-        <div class="event-desc">An evening with the Octopolis crew on the playa &mdash; food, beverage, and art together.</div>
-        <a href="#" class="event-link">RSVP &rarr;</a>
+        <div class="event-date">Burning Man &middot; on the playa</div>
+        <div class="event-name">The Patron Gift</div>
+        <div class="event-desc">Something small and mysterious waiting for each patron on the playa. You'll receive yours when the time comes &mdash; and you'll know what to do with it.</div>
+        <a href="#tiers" class="event-link">Become a patron &rarr;</a>
       </div>
     </div>
   </div>
@@ -1682,15 +1682,16 @@ section {
       glow.style.left = mx + 'px';
       glow.style.top = my + 'px';
       // Spawn bubble on movement
-      if (Math.random() > 0.6) {
+      if (Math.random() > 0.35) {
         bubbles.push({
-          x: mx + (Math.random() - 0.5) * 16,
+          x: mx + (Math.random() - 0.5) * 20,
           y: my,
-          r: Math.random() * 6 + 2,
+          r: Math.random() * 9 + 3,
           vx: (Math.random() - 0.5) * 0.8,
           vy: -(Math.random() * 1.5 + 0.5),
-          alpha: 0.6 + Math.random() * 0.3,
+          alpha: 0.55 + Math.random() * 0.3,
           hue: Math.random() > 0.5 ? 280 : 195, // purple or teal
+          blur: Math.random() < 0.45 ? Math.random() * 3.5 + 1 : 0,
         });
       }
     });
@@ -1701,22 +1702,31 @@ section {
         const b = bubbles[i];
         b.x += b.vx;
         b.y += b.vy;
-        b.alpha -= 0.008;
-        b.r *= 0.997;
+        b.alpha -= 0.005;
+        b.r *= 0.998;
         if (b.alpha <= 0) { bubbles.splice(i, 1); continue; }
+        // Depth-of-field: some bubbles are out of focus
+        ctx.filter = b.blur ? `blur(${b.blur}px)` : 'none';
+        // Translucent water-glass body
         ctx.beginPath();
         ctx.arc(b.x, b.y, b.r, 0, Math.PI * 2);
-        ctx.fillStyle = `hsla(${b.hue}, 70%, 70%, ${b.alpha * 0.4})`;
+        ctx.fillStyle = `hsla(${b.hue}, 70%, 78%, ${b.alpha * 0.18})`;
         ctx.fill();
-        // Glow ring
+        // Crisp bubble rim
         ctx.beginPath();
-        ctx.arc(b.x, b.y, b.r + 1.5, 0, Math.PI * 2);
-        ctx.strokeStyle = `hsla(${b.hue}, 80%, 80%, ${b.alpha * 0.2})`;
-        ctx.lineWidth = 1;
+        ctx.arc(b.x, b.y, b.r, 0, Math.PI * 2);
+        ctx.strokeStyle = `hsla(${b.hue}, 90%, 88%, ${b.alpha * 0.7})`;
+        ctx.lineWidth = 1.4;
         ctx.stroke();
+        // Upper-left shimmer
+        ctx.beginPath();
+        ctx.arc(b.x - b.r * 0.35, b.y - b.r * 0.35, b.r * 0.22, 0, Math.PI * 2);
+        ctx.fillStyle = `hsla(${b.hue}, 95%, 96%, ${b.alpha * 0.85})`;
+        ctx.fill();
       }
+      ctx.filter = 'none';
       // Limit bubble count
-      if (bubbles.length > 80) bubbles.splice(0, bubbles.length - 80);
+      if (bubbles.length > 140) bubbles.splice(0, bubbles.length - 140);
       requestAnimationFrame(animBubbles);
     })();
   }
