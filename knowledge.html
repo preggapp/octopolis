@@ -48,11 +48,18 @@
     .collab { padding:60px 0 80px; }
     .collab-intro { font-size:1.05rem;color:var(--text-secondary);line-height:1.85;margin-bottom:48px; }
     .collab-intro strong { color:var(--peach-soft);font-weight:500; }
-    .org-grid { display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:24px; }
-    .org-card { background:var(--bg-card);border:1px solid rgba(124,58,237,0.1);border-radius:var(--radius-lg);padding:32px;display:flex;flex-direction:column;align-items:flex-start; }
-    .org-logo { width:64px;height:64px;margin-bottom:20px;flex-shrink:0; }
-    .org-name { font-size:1.2rem;font-weight:500;margin-bottom:12px;color:var(--teal-bright); }
-    .org-desc { color:var(--text-secondary);font-size:0.92rem;line-height:1.8; }
+    /* Partner orgs — a quiet list (not boxes), equal height, expandable.
+       The essay below is the only "card" on the page so hierarchy reads:
+       header -> intro -> partners -> the deep-read essay. */
+    .org-grid { display:flex;flex-direction:column; }
+    .org-card { display:grid;grid-template-columns:52px 1fr;column-gap:24px;align-items:start;padding:26px 0;border-top:1px solid rgba(124,58,237,0.14);background:none;border:none;border-top:1px solid rgba(124,58,237,0.14);border-radius:0; }
+    .org-card:last-child { border-bottom:1px solid rgba(124,58,237,0.14); }
+    .org-logo { width:52px;height:52px;grid-row:span 3;margin:0;flex-shrink:0; }
+    .org-name { font-size:1.05rem;font-weight:500;margin-bottom:6px;color:var(--text-primary); }
+    .org-desc { color:var(--text-secondary);font-size:0.92rem;line-height:1.75;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden; }
+    .org-card.expanded .org-desc { -webkit-line-clamp:unset;display:block; }
+    .org-more { background:none;border:none;color:var(--purple-bright);font-family:inherit;font-size:0.75rem;font-weight:500;letter-spacing:0.12em;text-transform:uppercase;cursor:pointer;padding:0;margin-top:8px;justify-self:start; }
+    .org-more:hover { color:var(--purple-light); }
 
     /* ESSAY */
     .essay { padding:80px 0;border-top:1px solid rgba(124,58,237,0.06); }
@@ -65,6 +72,58 @@
     .essay-body strong { color:var(--text-primary);font-weight:500; }
     .essay-body h3 { font-family:'Inter',-apple-system,sans-serif;font-size:1.1rem;font-weight:600;color:var(--peach);margin:48px 0 16px;text-transform:uppercase;letter-spacing:0.08em; }
     .essay-body blockquote { margin:32px 0;padding:20px 24px;border-left:3px solid rgba(167,139,250,0.3);background:rgba(26,14,53,0.4);border-radius:0 var(--radius) var(--radius) 0;color:var(--text-primary);font-size:1.05rem;line-height:1.8; }
+
+    /* Essay scroll-box — the article is a distinct "reading" object: serif type,
+       warmer tone, its own header inside. Clearly an essay, not page furniture. */
+    .essay-scrollwrap { position:relative; }
+    .essay-scrollbox {
+      max-height:66vh;
+      overflow-y:auto;
+      padding:44px 48px 72px;
+      border:1px solid rgba(244,162,97,0.28);
+      border-radius:4px;
+      background:linear-gradient(180deg,rgba(244,239,230,0.045),rgba(244,239,230,0.015));
+      scrollbar-width:thin;
+      scrollbar-color:rgba(244,162,97,0.4) transparent;
+    }
+    .essay-kicker {
+      font-family:'Inter',-apple-system,sans-serif;
+      font-size:0.68rem;letter-spacing:0.26em;text-transform:uppercase;
+      color:var(--peach);margin-bottom:20px;
+    }
+    .essay-scrollbox .essay-header {
+      margin-bottom:40px;padding-bottom:32px;
+      border-bottom:1px solid rgba(244,162,97,0.18);
+    }
+    .essay-scrollbox .essay-title { font-size:clamp(1.7rem,3vw,2.4rem);color:var(--text-primary); }
+    .essay-scrollbox .essay-body blockquote { font-style:italic;border-left-color:rgba(244,162,97,0.4); }
+    .essay-scrollbox::-webkit-scrollbar { width:8px; }
+    .essay-scrollbox::-webkit-scrollbar-track { background:transparent; }
+    .essay-scrollbox::-webkit-scrollbar-thumb { background:rgba(167,139,250,0.35);border-radius:8px; }
+    .essay-scrollbox::-webkit-scrollbar-thumb:hover { background:rgba(167,139,250,0.6); }
+    .essay-scrollbox .essay-body > :first-child { margin-top:0; }
+    .essay-scrollwrap::after {
+      content:'';
+      position:absolute;
+      left:1px; right:1px; bottom:1px;
+      height:70px;
+      border-radius:0 0 4px 4px;
+      background:linear-gradient(to top,rgba(13,5,32,0.92),transparent);
+      pointer-events:none;
+    }
+    .essay-scrollhint {
+      display:flex;
+      align-items:center;
+      gap:8px;
+      margin:14px 4px 0;
+      color:var(--text-muted);
+      font-size:0.72rem;
+      letter-spacing:0.18em;
+      text-transform:uppercase;
+    }
+    @media(max-width:768px) {
+      .essay-scrollbox { max-height:70vh;padding:24px 20px 56px; }
+    }
 
     /* FOOTER */
     footer { background:var(--bg-section);border-top:1px solid rgba(124,58,237,0.06);padding:40px 0 20px;margin-top:60px; }
@@ -82,9 +141,22 @@
     input, textarea, button, select { font-size:16px !important; }
   }
 
+  /* Bubble cursor */
+  .bubble-canvas { position:fixed; inset:0; z-index:9998; pointer-events:none; }
+  .cursor-glow {
+    position:fixed; width:20px; height:20px;
+    border-radius:50%; pointer-events:none; z-index:9999;
+    transform:translate(-50%,-50%);
+    background:radial-gradient(circle, rgba(192,38,211,0.5) 0%, rgba(124,58,237,0.15) 50%, transparent 70%);
+    filter:blur(2px);
+  }
+  @media (max-width:768px) { .bubble-canvas, .cursor-glow { display:none; } }
+
   </style>
 </head>
 <body>
+<canvas class="bubble-canvas" id="bubbleCanvas"></canvas>
+<div class="cursor-glow" id="cursorGlow"></div>
 
   <nav>
     <div class="container">
@@ -162,7 +234,10 @@
 
   <section class="essay">
     <div class="container-narrow">
+      <div class="essay-scrollwrap">
+      <div class="essay-scrollbox">
       <div class="essay-header">
+        <p class="essay-kicker">Long read &middot; Essay</p>
         <h2 class="essay-title">Beholding the Octopus</h2>
         <p class="essay-subtitle">How the human perspective impairs our ability to actually see the octopus</p>
         <p class="essay-author">by Kevin Connor</p>
@@ -248,6 +323,9 @@
 
         <p style="color:var(--peach);margin-top:48px;">— Kevin Connor</p>
       </div>
+      </div>
+      </div>
+      <p class="essay-scrollhint" aria-hidden="true">Scroll to keep reading &darr;</p>
     </div>
   </section>
 
@@ -272,6 +350,19 @@
 
   <script>
     document.getElementById('mobileMenu').addEventListener('click',()=>document.getElementById('navLinks').classList.toggle('open'));
+    // Partner descriptions are clamped to 3 lines; add a "more" toggle where text overflows
+    document.querySelectorAll('.org-desc').forEach(desc=>{
+      if(desc.scrollHeight>desc.clientHeight+2){
+        const card=desc.closest('.org-card');
+        const btn=document.createElement('button');
+        btn.className='org-more';btn.type='button';btn.textContent='Read more';
+        btn.addEventListener('click',()=>{
+          const open=card.classList.toggle('expanded');
+          btn.textContent=open?'Show less':'Read more';
+        });
+        desc.after(btn);
+      }
+    });
   </script>
 <!-- ═══ NEWSLETTER POPUP — Big Art / Octopolis (added May 2026) ═══════════════
      A floating "Follow the journey" tab on every page that opens a sign-up card.
@@ -447,5 +538,72 @@
 })();
 </script>
 <!-- ═══ END NEWSLETTER POPUP ═══ -->
+
+<script>
+// Bubble cursor — diversified
+(function(){
+  var canvas = document.getElementById('bubbleCanvas');
+  var glow = document.getElementById('cursorGlow');
+  if (!canvas || !glow || window.innerWidth <= 768) return;
+  var ctx = canvas.getContext('2d');
+  var bubbles = [];
+  var palette = [280, 312, 195, 340, 260]; // purple, magenta, teal, peach, lavender
+  function resize(){ canvas.width = window.innerWidth; canvas.height = window.innerHeight; }
+  resize();
+  window.addEventListener('resize', resize);
+  document.addEventListener('mousemove', function(e){
+    glow.style.left = e.clientX+'px'; glow.style.top = e.clientY+'px';
+    if (Math.random() > 0.35) {
+      var roll = Math.random();
+      var r = roll < 0.55 ? Math.random()*4 + 2
+            : roll < 0.9  ? Math.random()*7 + 6
+                          : Math.random()*8 + 13;
+      bubbles.push({
+        x: e.clientX + (Math.random()-0.5)*24, y: e.clientY,
+        r: r,
+        vx: (Math.random()-0.5)*0.9,
+        vy: -(Math.random()*1.8 + 0.3),
+        wobAmp: Math.random()*1.2 + 0.3,
+        wobFreq: Math.random()*0.04 + 0.02,
+        phase: Math.random()*Math.PI*2,
+        alpha: 0.55 + Math.random()*0.3,
+        hue: palette[Math.floor(Math.random()*palette.length)],
+        blur: Math.random()<0.45 ? Math.random()*3.5 + 1 : 0,
+        soft: Math.random() < 0.22,
+        decay: 0.0035 + Math.random()*0.004
+      });
+    }
+  });
+  (function tick(){
+    ctx.clearRect(0,0,canvas.width,canvas.height);
+    for (var i=bubbles.length-1; i>=0; i--){
+      var b = bubbles[i];
+      b.phase += b.wobFreq;
+      b.x += b.vx + Math.sin(b.phase)*b.wobAmp*0.18;
+      b.y += b.vy;
+      b.alpha -= b.decay; b.r *= 0.998;
+      if (b.alpha <= 0){ bubbles.splice(i,1); continue; }
+      ctx.filter = b.blur ? 'blur('+b.blur+'px)' : 'none';
+      if (b.soft) {
+        var g = ctx.createRadialGradient(b.x, b.y, 0, b.x, b.y, b.r*1.6);
+        g.addColorStop(0, 'hsla('+b.hue+',90%,85%,'+(b.alpha*0.55)+')');
+        g.addColorStop(1, 'hsla('+b.hue+',90%,85%,0)');
+        ctx.fillStyle = g;
+        ctx.beginPath(); ctx.arc(b.x,b.y,b.r*1.6,0,Math.PI*2); ctx.fill();
+      } else {
+        ctx.beginPath(); ctx.arc(b.x,b.y,b.r,0,Math.PI*2);
+        ctx.fillStyle = 'hsla('+b.hue+',70%,78%,'+(b.alpha*0.18)+')'; ctx.fill();
+        ctx.beginPath(); ctx.arc(b.x,b.y,b.r,0,Math.PI*2);
+        ctx.strokeStyle = 'hsla('+b.hue+',90%,88%,'+(b.alpha*0.7)+')'; ctx.lineWidth = 1.4; ctx.stroke();
+        ctx.beginPath(); ctx.arc(b.x-b.r*0.35, b.y-b.r*0.35, b.r*0.22, 0, Math.PI*2);
+        ctx.fillStyle = 'hsla('+b.hue+',95%,96%,'+(b.alpha*0.85)+')'; ctx.fill();
+      }
+    }
+    ctx.filter = 'none';
+    if (bubbles.length > 140) bubbles.splice(0, bubbles.length-140);
+    requestAnimationFrame(tick);
+  })();
+})();
+</script>
 </body>
 </html>
